@@ -1,113 +1,304 @@
-import 'package:flutter/material.dart';
+library passcode_screen;
 
-void main() {
-  runApp(MyApp());
-}
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:passcode_screen/circle.dart';
+import 'package:passcode_screen/keyboard.dart';
+import 'package:passcode_screen/passcode_screen.dart';
+
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Login Screen',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.green,
+        primaryColor: Color.fromRGBO(0, 54, 90, 1),
+        primarySwatch: Colors.blue,
+        buttonColor: Colors.white,
       ),
-      home: MyHomePage(title: 'Ballefon'),
+      home: ExampleHomePage(title: 'Login Screen'),
+      initialRoute: '/',
+      routes: {
+        '/ChatScreen': (context) => ChatScreen(),
+        '/OverviewScreen': (context) => OverviewScreen(),
+        '/CenterConfirmButton': (context) => CenterConfirmButton(),
+      },
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
+const storedPasscode = '123456';
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
+class ExampleHomePage extends StatefulWidget {
+  ExampleHomePage({Key? key, required this.title}) : super(key: key);
   final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<StatefulWidget> createState() => _ExampleHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 2;
+class _ExampleHomePageState extends State<ExampleHomePage> {
+  final StreamController<bool> _verificationNotifier =
+      StreamController<bool>.broadcast();
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  bool isAuthenticated = false;
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
+        centerTitle: true,
         title: Text(widget.title),
+        actions: <Widget>[_defaultLockScreenButton(context)],
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
+            Text("Vælg venligst dit center"),
+            Container(
+              width: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.all(
+                  Radius.circular(8),
+                ),
+                color: Color.fromRGBO(0, 54, 90, 0.95),
+              ),
+              child: Align(
+                alignment: Alignment.center,
+                child: _centreChooser(context),
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  _defaultLockScreenButton(BuildContext context) => IconButton(
+        icon: Icon(Icons.person_add),
+        color: Theme.of(context).buttonColor,
+        onPressed: () {
+          _showLockScreen(
+            context,
+            opaque: false,
+            cancelButton: Text(
+              'Cancel',
+              style: const TextStyle(fontSize: 16, color: Colors.white),
+              semanticsLabel: 'Cancel',
+            ),
+          );
+        },
+      );
+
+  String centres = "CPHMED Bella Center";
+// GAYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
+  _centreChooser(BuildContext context) => DropdownButton<String>(
+        value: centres,
+        icon: const Icon(Icons.arrow_downward, color: Colors.white),
+        iconSize: 24,
+        elevation: 16,
+        style: const TextStyle(color: Colors.black),
+        onChanged: (String? newValue) {
+          setState(() {
+            centres = newValue!;
+          });
+          Navigator.pushNamed(context, '/CenterConfirmButton');
+        },
+        items: <String>[
+          'CPHMED Bella Center',
+          'CPHMED Ballerup',
+          'CPHMED Ørestad',
+          'CPHMED Hellerup',
+          'CPHMED Herlev',
+          'CPHMED Lyngby',
+          'CPHMED Parken',
+          'CPHMED Forum',
+          'CPHMED Skibby',
+          'CPHMED Frederikssund',
+          'CPHMED Frederiksværk',
+        ].map<DropdownMenuItem<String>>((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(value),
+          );
+        }).toList(),
+      );
+
+  _showLockScreen(
+    BuildContext context, {
+    required bool opaque,
+    CircleUIConfig? circleUIConfig,
+    KeyboardUIConfig? keyboardUIConfig,
+    required Widget cancelButton,
+    List<String>? digits,
+  }) {
+    Navigator.push(
+        context,
+        PageRouteBuilder(
+          opaque: opaque,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              PasscodeScreen(
+            title: Text(
+              'Enter App Passcode',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white, fontSize: 28),
+            ),
+            circleUIConfig: circleUIConfig,
+            keyboardUIConfig: keyboardUIConfig,
+            passwordEnteredCallback: _onPasscodeEntered,
+            cancelButton: cancelButton,
+            deleteButton: Text(
+              'Delete',
+              style: const TextStyle(fontSize: 16, color: Colors.white),
+              semanticsLabel: 'Delete',
+            ),
+            shouldTriggerVerification: _verificationNotifier.stream,
+            backgroundColor: Colors.black.withOpacity(0.8),
+            cancelCallback: _onPasscodeCancelled,
+            digits: digits,
+            passwordDigits: 6,
+            bottomWidget: _buildPasscodeRestoreButton(),
+            isValidCallback: _loginButton,
+          ),
+        ));
+  }
+
+  _onPasscodeEntered(String enteredPasscode) {
+    bool isValid = storedPasscode == enteredPasscode;
+    _verificationNotifier.add(isValid);
+    if (isValid) {
+      setState(() {
+        this.isAuthenticated = isValid;
+      });
+    }
+  }
+
+  _onPasscodeCancelled() {
+    Navigator.maybePop(context);
+  }
+
+/*   @override
+  void dispose() {
+    _verificationNotifier.close();
+    super.dispose();
+  } */
+
+  _buildPasscodeRestoreButton() => Align(
+        alignment: Alignment.bottomCenter,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 10.0, top: 20.0),
+          child: TextButton(
+            child: Text(
+              "Log ind",
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w300),
+            ),
+            onPressed: _loginButton,
+            // splashColor: Colors.white.withOpacity(0.4),
+            // highlightColor: Colors.white.withOpacity(0.2),
+            // ),
+          ),
+        ),
+      );
+
+  _loginButton() {
+    if (isAuthenticated) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => ChatScreen()),
+      );
+    }
+/*       _showRestoreDialog(() {
+        Navigator.maybePop(context); */
+    //TOdO: Clear your stored passcode here);
+  }
+}
+
+class CenterConfirmButton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: Colors.white,
+      title: Text("Hol' up!"),
+      content: Text("Is this your centre?"),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/ChatScreen');
+          },
+          child: Container(
+            child: Text("Yes"),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: Container(
+            child: Text("Nope"),
+          ),
+        )
+      ],
+    );
+  }
+}
+
+class ChatScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text("Chat Screen"),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.of(context).popAndPushNamed('/OverviewScreen');
+          },
+          icon: Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+          ),
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        onPressed: null,
+        backgroundColor: Color.fromRGBO(0, 54, 90, 1),
+        child: Icon(Icons.question_answer_sharp),
+      ),
+    );
+  }
+}
+
+class OverviewScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text("Overview Screen"),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.of(context).popAndPushNamed('/ChatScreen');
+          },
+          icon: Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: null,
+        backgroundColor: Color.fromRGBO(0, 54, 90, 1),
+        child: Icon(Icons.question_answer_sharp),
+      ),
     );
   }
 }
