@@ -1,6 +1,7 @@
 library passcode_screen;
 
 import 'dart:async';
+import 'package:ballefon/screens/chat/chat.dart';
 import 'package:flutter/material.dart';
 import 'package:passcode_screen/circle.dart';
 import 'package:passcode_screen/keyboard.dart';
@@ -21,36 +22,44 @@ class LoginState extends State<Login> {
       StreamController<bool>.broadcast();
 
   bool isAuthenticated = false;
+  bool isValid = false;
 
-  // List<DropdownMenuItem<String>> list;
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   list = [];
-  //   DB.initialize().then((status) {
-  //     if(status) {
-  //       DB.getData().then((listMap) {
-  //         listMap.map((map) {
-  //           print(map.toString());
-  //           return getDropdownWidget(map);
-  //         })
-  //       })
-  //     }
-  //   })
-  // }
-
+  String dropdownValue = "One";
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          centerTitle: true,
-          title: Text(widget.title),
-          actions: <Widget>[_defaultLockScreenButton(context)],
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(widget.title),
+        actions: <Widget>[_defaultLockScreenButton(context)],
+      ),
+      body: Center(
+        child: DropdownButton<String>(
+          value: dropdownValue,
+          icon: const Icon(Icons.arrow_downward),
+          iconSize: 24,
+          elevation: 16,
+          style: const TextStyle(color: Colors.deepPurple),
+          underline: Container(
+            height: 2,
+            color: Colors.deepPurpleAccent,
+          ),
+          onChanged: (String? newValue) {
+            setState(() {
+              dropdownValue = newValue!;
+            });
+            Navigator.pushNamed(context, '/CenterConfirmButton');
+          },
+          items: <String>['One', 'Two', 'Free', 'Four']
+              .map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
         ),
-        body: Center(
-          child: DropdownButton(
-              hint: Text("Vælg et center"), onChanged: (value) {}, items: null),
-        ));
+      ),
+    );
   }
 
   _defaultLockScreenButton(BuildContext context) => IconButton(
@@ -68,8 +77,6 @@ class LoginState extends State<Login> {
           );
         },
       );
-
-  String centres = "CPHMED Bella Center";
 
   _showLockScreen(
     BuildContext context, {
@@ -128,7 +135,7 @@ class LoginState extends State<Login> {
     if (isAuthenticated) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => Login(title: "Login2")),
+        MaterialPageRoute(builder: (context) => ChatScreen(isValid: true)),
       );
     }
   }
@@ -144,7 +151,11 @@ class CenterConfirmButton extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () {
-            Navigator.pushReplacementNamed(context, '/ChatScreen');
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ChatScreen(isValid: false)),
+            );
           },
           child: Container(
             child: Text("Yes"),
