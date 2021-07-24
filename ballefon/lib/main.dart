@@ -18,7 +18,6 @@ class MyApp extends StatelessWidget {
       routes: {
         '/ChatScreen': (context) => ChatScreen(),
         '/OverviewScreen': (context) => OverviewScreen(),
-        '/CenterConfirmButton': (context) => CenterConfirmButton(),
       },
     );
   }
